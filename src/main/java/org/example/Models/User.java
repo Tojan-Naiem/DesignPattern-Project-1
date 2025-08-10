@@ -1,8 +1,10 @@
 package org.example.Models;
 
+
 import org.example.Controller.EventBus;
 import org.example.Services.Preferences.IPreference;
 import org.example.Services.Preferences.SpecificTime;
+
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -70,6 +72,7 @@ public class User {
         return registeredEvent.add(event);
     }
     public void addNotification(String msg,boolean isMuted){
+
         for(IPreference pref:preferences){
             System.out.println(pref.getClass().getName());
             if(pref.getClass().getName().equals("org.example.Services.Preferences.SpecificTime")){
@@ -80,6 +83,15 @@ public class User {
     }
 
     public void getNotifications() {
+            LocalTime now = LocalTime.now();
+
+            System.out.println("🔔 Visible notifications for " + email + ":");
+            for (Map.Entry<String, Boolean> entry : notifications.entrySet()) {
+                String content = entry.getKey();
+                boolean isMuted = entry.getValue();
+                    System.out.println("✅ " + content);
+
+            }
         LocalTime now = LocalTime.now();
 
         System.out.println("🔔 Visible notifications for " + email + ":");
@@ -113,6 +125,7 @@ public class User {
     public void setNotifications(Map<String, Boolean> notifications) {
         this.notifications = notifications;
     }
+
 
     public List<IPreference> getPreferences() {
         return preferences;
