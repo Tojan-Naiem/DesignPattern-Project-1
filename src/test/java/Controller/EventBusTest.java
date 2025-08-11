@@ -13,6 +13,7 @@ import org.mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -106,7 +107,7 @@ class EventBusTest {
     void subscribeUserEventReturnTrue(){
         User user=new User();
         Event event=new Event();
-        user.setId(10);
+        user.setId(UUID.randomUUID().toString());
         event.setEventType("Task");
 
         Data.users.add(user);
@@ -138,7 +139,7 @@ class EventBusTest {
     void publishEventSubscribers() throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         Event event = new Event();
         User user = new User();
-        user.setId(1);
+        user.setId(UUID.randomUUID().toString());
         event.setEventType("Task");
         Data.events.add(event);
         Data.users.add(user);

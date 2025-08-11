@@ -3,13 +3,10 @@ package org.example.Models;
 
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class User {
-    private int id;
+    private String id;
     private String email;
     private String password;
     private boolean isAdmin=false;
@@ -22,13 +19,14 @@ public class User {
         this.email=email;
         this.password=password;
         this.isAdmin=isAdmin;
+        this.id= UUID.randomUUID().toString();
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
