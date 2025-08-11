@@ -83,15 +83,6 @@ public class User {
     public void getNotifications() {
             LocalTime now = LocalTime.now();
 
-            System.out.println("🔔 Visible notifications for " + email + ":");
-            for (Map.Entry<String, Boolean> entry : notifications.entrySet()) {
-                String content = entry.getKey();
-                boolean isMuted = entry.getValue();
-                    System.out.println("✅ " + content);
-
-            }
-        LocalTime now = LocalTime.now();
-
         System.out.println("🔔 Visible notifications for " + email + ":");
         for (Map.Entry<String, Boolean> entry : notifications.entrySet()) {
             String content = entry.getKey();
