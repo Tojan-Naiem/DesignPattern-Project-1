@@ -8,8 +8,13 @@ import org.example.Services.Preferences.SpecificTime;
 
 import java.time.LocalTime;
 import java.util.*;
+import java.util.logging.Logger;
+
+import static java.lang.invoke.MethodHandles.lookup;
+
 
 public class User {
+    private static Logger log =Logger.getLogger(User.class.getName());
     private String id;
     private String email;
     private String password;
@@ -18,6 +23,7 @@ public class User {
     private Map<String,Boolean> notifications=new HashMap<>();
     private List<IPreference> preferences=new ArrayList<>();
     public User(){
+        log.info(" User created ");
 
     }
     public User(String email,String password,boolean isAdmin){
@@ -25,6 +31,7 @@ public class User {
         this.password=password;
         this.isAdmin=isAdmin;
         this.id= UUID.randomUUID().toString();
+        log.info(" User created : "+this.email);
     }
 
     public String getId() {
@@ -65,8 +72,11 @@ public class User {
 
     public void setRegisteredEvent(List<Event> registeredEvent) {
         this.registeredEvent = registeredEvent;
+
+
     }
     public boolean addEvent(Event event){
+        log.info(" User " +this.email+" registered to the event : "+event);
         return registeredEvent.add(event);
     }
     public void addNotification(String msg,boolean isMuted){
@@ -78,6 +88,8 @@ public class User {
             }
         }
         notifications.put(msg,isMuted);
+        log.info(" User " +this.email+" added notification to the event : "+msg);
+
     }
 
     public void getNotifications() {
@@ -106,8 +118,11 @@ public class User {
                 }
             } else {
                 System.out.println("✅ " + content);
+
             }
         }
+        log.info(" User " +this.email+" get notifications ");
+
 
     }
 
@@ -118,6 +133,7 @@ public class User {
 
     public List<IPreference> getPreferences() {
         return preferences;
+
     }
 
     public void setPreferences(List<IPreference> preferences) {
@@ -125,5 +141,7 @@ public class User {
     }
     public void addPreference(IPreference preference){
         this.preferences.add(preference);
+        log.info(" User " +this.email+" added preference : "+preference);
+
     }
 }

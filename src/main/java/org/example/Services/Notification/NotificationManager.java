@@ -6,13 +6,18 @@ import org.example.Models.User;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class NotificationManager {
+    private static Logger log =Logger.getLogger(NotificationManager.class.getName());
+
     private static final ExecutorService executorService= Executors.newCachedThreadPool();
     public static void notify(Event event, List<User> subscribers) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         subscribers.forEach(subscriber -> {
             executorService.submit(()->subscriber.addNotification(event.getCreatedAt()+" You recevied a notification for the even  : "+event.getEventType(),false));
         });
+        log.info(" Publisher have been publish the event " +event.getEventType()+" successfully to the subscribers ");
+
 
     }
 }

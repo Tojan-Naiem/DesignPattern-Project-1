@@ -4,14 +4,17 @@ import org.example.Models.User;
 
 import java.time.LocalTime;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 public class SpecificTime implements IPreference{
     private final int startWorkHour;
     private final int endWorkHour;
+    private static Logger log =Logger.getLogger(SpecificTime.class.getName());
 
     public SpecificTime(int startWorkHour, int endWorkHour) {
         this.startWorkHour = startWorkHour;
         this.endWorkHour = endWorkHour;
+        log.info("Setting up dafault time");
     }
 
     public int getEndWorkHour() {

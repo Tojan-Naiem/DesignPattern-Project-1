@@ -2,8 +2,11 @@ package org.example.Models;
 
 
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
 
 public class Event {
+    private static Logger log =Logger.getLogger(Event.class.getName());
+
     private int id;
     private LocalDateTime createdAt;
     private String eventType;
@@ -14,6 +17,8 @@ public class Event {
         this.id=id;
         this.eventType=eventType;
         this.createdAt=LocalDateTime.now();
+        log.info(" Event created : "+this.id);
+
     }
     public int getId() {
         return this.id;

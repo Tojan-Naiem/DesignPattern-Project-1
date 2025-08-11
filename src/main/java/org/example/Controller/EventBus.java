@@ -7,17 +7,21 @@ import org.example.Services.Notification.NotificationManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class EventBus {
+    private static Logger log =Logger.getLogger(EventBus.class.getName());
 
 
     public void subscribe(User user, Event event){
         if(user==null||event==null){
-             throw new NullPointerException("user or event is null");
+            log.severe("user or event is null");
+            throw new NullPointerException("user or event is null");
 
         }
         if(!Data.events.contains(event)||!Data.users.contains(user)){
+            log.severe("user or event not found");
             throw new NullPointerException("Event is not found");
         }
 
@@ -31,6 +35,7 @@ public class EventBus {
                   u.addEvent(event);
 
                 });
+        log.info(" Subscriber "+user.getEmail()+" have been subscribed successfully to the event "+event.getEventType());
 
     }
 
@@ -46,6 +51,7 @@ public class EventBus {
                 .collect(Collectors.toList());
 
         NotificationManager.notify(event,allUsers);
+
         return true;
     }
 }
