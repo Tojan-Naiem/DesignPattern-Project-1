@@ -95,6 +95,108 @@ classDiagram
     %% Static storage - no internal relationships
 ```
 
+### Controller Layer
+```mermaid
+classDiagram
+    class EventBus {
+        +subscribe(User user, Event event)
+        +publish(Event event) boolean
+    }
+
+    class Publisher {
+        -eventBus: EventBus
+        +Publisher()
+        +Publisher(EventBus eventBus)
+        +publish(Event event)
+    }
+
+    class Schedule {
+        -eventBus: EventBus
+        -scheduledExecutorService: ScheduledExecutorService
+        +Schedule(EventBus eventBus)
+        +start(Event event, long time)
+        +stop()
+    }
+
+    %% Controller Layer Internal Relationships
+    Publisher --> EventBus : uses
+    Schedule --> EventBus : uses
+```
+
+### Model Layer
+```mermaid
+classDiagram
+    class Event {
+        -id: int
+        -createdAt: LocalDateTime
+        -eventType: String
+        +Event()
+        +Event(int id, String eventType)
+        +getId() int
+        +getCreatedAt() LocalDateTime
+        +getEventType() String
+        +setEventType(String eventType)
+    }
+
+    class User {
+        -id: String
+        -email: String
+        -password: String
+        -isAdmin: boolean
+        -registeredEvent: List<Event>
+        -notifications: Map<String, Boolean>
+        -preferences: List<IPreference>
+        +User()
+        +User(String email, String password, boolean isAdmin)
+        +addEvent(Event event) boolean
+        +addNotification(String msg, boolean isMuted)
+        +getNotifications()
+        +addPreference(IPreference preference)
+    }
+
+    %% Model Layer Internal Relationships
+    User --> Event : contains list of
+```
+
+### Service Layer
+```mermaid
+classDiagram
+    class NotificationManager {
+        -executorService: ExecutorService
+        +notify(Event event, List<User> subscribers)
+    }
+
+    class IPreference {
+        <<interface>>
+        +filter() Predicate<User>
+    }
+
+    class SpecificTime {
+        -startWorkHour: int
+        -endWorkHour: int
+        +SpecificTime(int startWorkHour, int endWorkHour)
+        +getEndWorkHour() int
+        +getStartWorkHour() int
+        +filter() Predicate<User>
+    }
+
+    %% Service Layer Internal Relationships
+    SpecificTime ..|> IPreference : implements
+```
+
+### Data Layer
+```mermaid
+classDiagram
+    class Data {
+        +users: List<User>
+        +events: List<Event>
+        +subscribers: Map<String, List<User>>
+    }
+
+    %% Note: Data is a static storage class
+    %% No internal relationships - it's a simple data container
+```
+
 ### Cross-Layer Communication
 ```mermaid
 graph TB
@@ -202,268 +304,6 @@ classDiagram
     AuthenticationView --> ConsoleUI : uses
 ```
 
-### Controller Layer
-```mermaid
-classDiagram
-    class EventBus {
-        +subscribe(User user, Event event)
-        +publish(Event event) boolean
-    }
-
-    class Publisher {
-        -eventBus: EventBus
-        +Publisher()
-        +Publisher(EventBus eventBus)
-        +publish(Event event)
-    }
-
-    class Schedule {
-        -eventBus: EventBus
-        -scheduledExecutorService: ScheduledExecutorService
-        +Schedule(EventBus eventBus)
-        +start(Event event, long time)
-        +stop()
-    }
-
-    %% Controller Layer Internal Relationships
-    Publisher --> EventBus : uses
-    Schedule --> EventBus : uses
-```
-
-### Model Layer
-```mermaid
-classDiagram
-    class Event {
-        -id: int
-        -createdAt: LocalDateTime
-        -eventType: String
-        +Event()
-        +Event(int id, String eventType)
-        +getId() int
-        +getCreatedAt() LocalDateTime
-        +getEventType() String
-        +setEventType(String eventType)
-    }
-
-    class User {
-        -id: String
-        -email: String
-        -password: String
-        -isAdmin: boolean
-        -registeredEvent: List<Event>
-        -notifications: Map<String, Boolean>
-        -preferences: List<IPreference>
-        +User()
-        +User(String email, String password, boolean isAdmin)
-        +addEvent(Event event) boolean
-        +addNotification(String msg, boolean isMuted)
-        +getNotifications()
-        +addPreference(IPreference preference)
-    }
-
-    %% Model Layer Internal Relationships
-    User --> Event : contains list of
-```
-
-### Service Layer
-```mermaid
-classDiagram
-    class NotificationManager {
-        -executorService: ExecutorService
-        +notify(Event event, List<User> subscribers)
-    }
-
-    class IPreference {
-        <<interface>>
-        +filter() Predicate<User>
-    }
-
-    class SpecificTime {
-        -startWorkHour: int
-        -endWorkHour: int
-        +SpecificTime(int startWorkHour, int endWorkHour)
-        +getEndWorkHour() int
-        +getStartWorkHour() int
-        +filter() Predicate<User>
-    }
-
-    %% Service Layer Internal Relationships
-    SpecificTime ..|> IPreference : implements
-```
-
-### Data Layer
-```mermaid
-classDiagram
-    class Data {
-        +users: List<User>
-        +events: List<Event>
-        +subscribers: Map<String, List<User>>
-    }
-
-    %% Note: Data is a static storage class
-    %% No internal relationships - it's a simple data container
-```
-
-### Layer-to-Layer Connections
-```mermaid
-graph TB
-    subgraph "View Layer"
-        MC[MainController]
-        UV[UserView]
-        AV[AdminView]
-        AU[AuthenticationView]
-    end
-    
-    subgraph "Controller Layer"
-        EB[EventBus]
-        PUB[Publisher]
-        SCH[Schedule]
-    end
-    
-    subgraph "Service Layer"
-        NM[NotificationManager]
-        IP[IPreference]
-        ST[SpecificTime]
-    end
-    
-    subgraph "Model Layer"
-        U[User]
-        E[Event]
-    end
-    
-    subgraph "Data Layer"
-        D[Data]
-    end
-
-    %% View to Controller
-    MC --> EB
-    MC --> PUB
-    UV --> EB
-    AV --> PUB
-
-    %% Controller to Service
-    EB --> NM
-    
-    %% Controller to Data
-    EB --> D
-    
-    %% View to Data
-    AU --> D
-    
-    %% Model to Service
-    U --> IP
-    
-    %% Service to Model (indirect)
-    NM --> U
-    NM --> E
-```mermaid
-classDiagram
-    class Main {
-        +main(args)
-    }
-
-    class EventBus {
-        +subscribe(user, event)
-        +publish(event)
-    }
-
-    class Publisher {
-        -eventBus: EventBus
-        +publish(event)
-    }
-
-    class Schedule {
-        -eventBus: EventBus
-        +start(event, time)
-        +stop()
-    }
-
-    class Event {
-        -id: int
-        -eventType: String
-        -createdAt: LocalDateTime
-        +getId()
-        +getEventType()
-    }
-
-    class User {
-        -id: String
-        -email: String
-        -isAdmin: boolean
-        -registeredEvent: List~Event~
-        -preferences: List~IPreference~
-        +addEvent(event)
-        +addNotification(msg, isMuted)
-    }
-
-    class Data {
-        +users: List~User~
-        +events: List~Event~
-        +subscribers: Map
-    }
-
-    class NotificationManager {
-        +notify(event, subscribers)
-    }
-
-    class IPreference {
-        <<interface>>
-        +filter()
-    }
-
-    class SpecificTime {
-        -startWorkHour: int
-        -endWorkHour: int
-        +filter()
-    }
-
-    class MainController {
-        -eventBus: EventBus
-        -publisher: Publisher
-        +initialize()
-    }
-
-    class AuthenticationView {
-        +displayLoginScreen()
-        +displayRegistrationScreen()
-    }
-
-    class UserView {
-        -eventBus: EventBus
-        +displayUserDashboard(user)
-    }
-
-    class AdminView {
-        -publisher: Publisher
-        +displayAdminDashboard()
-    }
-
-    class EventDisplayView {
-        +displayAllEvents()
-        +getEventById(id)
-    }
-
-    class ConsoleUI {
-        +printWelcomeBanner()
-        +printMainMenu()
-        +printSuccessMessage()
-    }
-
-    %% Simple Relationships
-    Main --> MainController
-    Publisher --> EventBus
-    Schedule --> EventBus
-    EventBus --> Data
-    EventBus --> NotificationManager
-    User --> Event
-    User --> IPreference
-    SpecificTime ..|> IPreference
-    MainController --> AuthenticationView
-    MainController --> UserView
-    MainController --> AdminView
-    UserView --> EventDisplayView
-    AdminView --> EventDisplayView
-```
 
 ## Features
 
