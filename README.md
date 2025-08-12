@@ -2,6 +2,108 @@
 
 A Java-based event notification system implementing the Observer pattern with asynchronous processing.
 
+## UML Class Diagram
+
+```mermaid
+classDiagram
+    class EventBus {
+        -observers: List<IObserver>
+        -eventQueue: Queue<Event>
+        +subscribe(observer)
+        +unsubscribe(observer)
+        +publishEvent(event)
+        +notifyObservers(event)
+    }
+
+    class IObserver {
+        <<interface>>
+        +update(event)
+    }
+
+    class User {
+        -email: String
+        -password: String
+        -role: UserRole
+        -preferences: IPreference
+        -subscribedEventTypes: List<String>
+        +subscribe(eventType)
+        +unsubscribe(eventType)
+        +update(event)
+    }
+
+    class Event {
+        -id: String
+        -type: String
+        -title: String
+        -description: String
+        -timestamp: LocalDateTime
+        -priority: Priority
+    }
+
+    class Publisher {
+        -eventBus: EventBus
+        +publishEvent(event)
+    }
+
+    class Schedule {
+        -scheduledEvents: Map
+        -eventBus: EventBus
+        +scheduleEvent(event, time)
+        +processScheduledEvents()
+    }
+
+    class NotificationManager {
+        -instance: NotificationManager
+        -users: List<User>
+        -eventBus: EventBus
+        +getInstance()
+        +sendNotification(user, event)
+    }
+
+    class IPreference {
+        <<interface>>
+        +shouldReceiveNotification(event)
+        +getQuietHours()
+    }
+
+    class DefaultPreference {
+        -quietHours: TimeRange
+        -mutedEventTypes: Set<String>
+        +shouldReceiveNotification(event)
+    }
+
+    class ConsoleUI {
+        -notificationManager: NotificationManager
+        -eventBus: EventBus
+        -currentUser: User
+        +start()
+        +showMainMenu()
+    }
+
+    class DataStore {
+        -users: Map<String, User>
+        -events: List<Event>
+        +saveUser(user)
+        +getUser(email)
+    }
+
+    %% Relationships
+    User ..|> IObserver
+    DefaultPreference ..|> IPreference
+    User --> IPreference
+    User --> UserRole
+    Event --> Priority
+    Publisher --> EventBus
+    Schedule --> EventBus
+    EventBus --> IObserver
+    NotificationManager --> User
+    NotificationManager --> EventBus
+    ConsoleUI --> NotificationManager
+    ConsoleUI --> EventBus
+    DataStore --> User
+    DataStore --> Event
+```
+
 ## Features
 
 - **Event-Driven Architecture**: Centralized event bus for publishers and subscribers
@@ -50,6 +152,27 @@ org.example/
 ├── View/          # UI components and controllers
 └── Data/          # In-memory storage
 ```
+
+## Key Component Interactions
+
+### Observer Pattern Flow
+1. **EventBus** acts as the central hub managing all observers (Users)
+2. **Publisher** creates events and sends them to EventBus
+3. **EventBus** notifies all subscribed Users about relevant events
+4. **NotificationManager** processes notifications based on user preferences
+
+### User Preference System
+- **IPreference** interface allows different notification strategies
+- **DefaultPreference** for regular users with muting and quiet hours
+- **AdminPreference** for administrators with priority notifications
+- **TimeRange** utility for quiet hours functionality
+
+### Data Flow
+1. Admin creates event via **ConsoleUI**
+2. **Publisher** publishes event to **EventBus**
+3. **EventBus** notifies subscribed **Users**
+4. **NotificationManager** applies user **Preferences**
+5. Notifications delivered based on user settings
 
 ## Testing
 
