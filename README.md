@@ -5,8 +5,76 @@ A Java-based event notification system implementing the Observer pattern with as
 ## Architecture Layer Diagrams
 
 ### Complete System Overview
+### View Layer
 
+classDiagram
+    class MainController {
+        -eventBus: EventBus
+        -publisher: Publisher
+        -authView: AuthenticationView
+        -userView: UserView
+        -adminView: AdminView
+        +initialize()
+        +handleLogin()
+        +handleRegistration()
+    }
+
+    class AuthenticationView {
+        +displayLoginScreen() User
+        +displayRegistrationScreen() User
+        -authenticateUser() User
+    }
+
+    class UserView {
+        -eventBus: EventBus
+        -eventDisplayView: EventDisplayView
+        +displayUserDashboard(User user)
+        -handleEventSubscription(User user)
+        -configureUserPreferences(User user)
+    }
+
+    class AdminView {
+        -publisher: Publisher
+        -eventDisplayView: EventDisplayView
+        +displayAdminDashboard()
+        -handleEventCreation()
+        -handleEventPublication()
+    }
+
+    class EventDisplayView {
+        +displayAllEvents()
+        +getEventById(int id) Event
+    }
+
+    class InputHandler {
+        -scanner: Scanner
+        +getIntegerInput() int
+        +getStringInput() String
+        +validateRange() boolean
+    }
+
+    class ConsoleUI {
+        +printWelcomeBanner()
+        +printMainMenu()
+        +printSuccessMessage()
+        +printErrorMessage()
+    }
+
+    %% View Layer Internal Relationships
+    MainController --> AuthenticationView : uses
+    MainController --> UserView : uses
+    MainController --> AdminView : uses
+    UserView --> EventDisplayView : uses
+    AdminView --> EventDisplayView : uses
+    UserView --> InputHandler : uses
+    AdminView --> InputHandler : uses
+    AuthenticationView --> InputHandler : uses
+    UserView --> ConsoleUI : uses
+    AdminView --> ConsoleUI : uses
+    AuthenticationView --> ConsoleUI : uses
+```
 ### Controller Layer
+
 ```mermaid
 classDiagram
     class EventBus {
@@ -237,72 +305,6 @@ graph TB
     NM --> E
 ```
 ```mermaid
-classDiagram
-    class MainController {
-        -eventBus: EventBus
-        -publisher: Publisher
-        -authView: AuthenticationView
-        -userView: UserView
-        -adminView: AdminView
-        +initialize()
-        +handleLogin()
-        +handleRegistration()
-    }
-
-    class AuthenticationView {
-        +displayLoginScreen() User
-        +displayRegistrationScreen() User
-        -authenticateUser() User
-    }
-
-    class UserView {
-        -eventBus: EventBus
-        -eventDisplayView: EventDisplayView
-        +displayUserDashboard(User user)
-        -handleEventSubscription(User user)
-        -configureUserPreferences(User user)
-    }
-
-    class AdminView {
-        -publisher: Publisher
-        -eventDisplayView: EventDisplayView
-        +displayAdminDashboard()
-        -handleEventCreation()
-        -handleEventPublication()
-    }
-
-    class EventDisplayView {
-        +displayAllEvents()
-        +getEventById(int id) Event
-    }
-
-    class InputHandler {
-        -scanner: Scanner
-        +getIntegerInput() int
-        +getStringInput() String
-        +validateRange() boolean
-    }
-
-    class ConsoleUI {
-        +printWelcomeBanner()
-        +printMainMenu()
-        +printSuccessMessage()
-        +printErrorMessage()
-    }
-
-    %% View Layer Internal Relationships
-    MainController --> AuthenticationView : uses
-    MainController --> UserView : uses
-    MainController --> AdminView : uses
-    UserView --> EventDisplayView : uses
-    AdminView --> EventDisplayView : uses
-    UserView --> InputHandler : uses
-    AdminView --> InputHandler : uses
-    AuthenticationView --> InputHandler : uses
-    UserView --> ConsoleUI : uses
-    AdminView --> ConsoleUI : uses
-    AuthenticationView --> ConsoleUI : uses
-```
 
 
 ## Features
