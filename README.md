@@ -2,8 +2,233 @@
 
 A Java-based event notification system implementing the Observer pattern with asynchronous processing.
 
-## UML Class Diagram
+## Architecture Layer Diagrams
 
+### Complete System Overview
+
+### View Layer
+```mermaid
+classDiagram
+    class MainController {
+        -eventBus: EventBus
+        -publisher: Publisher
+        -authView: AuthenticationView
+        -userView: UserView
+        -adminView: AdminView
+        +initialize()
+        +handleLogin()
+        +handleRegistration()
+    }
+
+    class AuthenticationView {
+        +displayLoginScreen() User
+        +displayRegistrationScreen() User
+        -authenticateUser() User
+    }
+
+    class UserView {
+        -eventBus: EventBus
+        -eventDisplayView: EventDisplayView
+        +displayUserDashboard(User user)
+        -handleEventSubscription(User user)
+        -configureUserPreferences(User user)
+    }
+
+    class AdminView {
+        -publisher: Publisher
+        -eventDisplayView: EventDisplayView
+        +displayAdminDashboard()
+        -handleEventCreation()
+        -handleEventPublication()
+    }
+
+    class EventDisplayView {
+        +displayAllEvents()
+        +getEventById(int id) Event
+    }
+
+    class InputHandler {
+        -scanner: Scanner
+        +getIntegerInput() int
+        +getStringInput() String
+        +validateRange() boolean
+    }
+
+    class ConsoleUI {
+        +printWelcomeBanner()
+        +printMainMenu()
+        +printSuccessMessage()
+        +printErrorMessage()
+    }
+
+    %% View Layer Internal Relationships
+    MainController --> AuthenticationView : uses
+    MainController --> UserView : uses
+    MainController --> AdminView : uses
+    UserView --> EventDisplayView : uses
+    AdminView --> EventDisplayView : uses
+    UserView --> InputHandler : uses
+    AdminView --> InputHandler : uses
+    AuthenticationView --> InputHandler : uses
+    UserView --> ConsoleUI : uses
+    AdminView --> ConsoleUI : uses
+    AuthenticationView --> ConsoleUI : uses
+```
+
+### Controller Layer
+```mermaid
+classDiagram
+    class EventBus {
+        +subscribe(User user, Event event)
+        +publish(Event event) boolean
+    }
+
+    class Publisher {
+        -eventBus: EventBus
+        +Publisher()
+        +Publisher(EventBus eventBus)
+        +publish(Event event)
+    }
+
+    class Schedule {
+        -eventBus: EventBus
+        -scheduledExecutorService: ScheduledExecutorService
+        +Schedule(EventBus eventBus)
+        +start(Event event, long time)
+        +stop()
+    }
+
+    %% Controller Layer Internal Relationships
+    Publisher --> EventBus : uses
+    Schedule --> EventBus : uses
+```
+
+### Model Layer
+```mermaid
+classDiagram
+    class Event {
+        -id: int
+        -createdAt: LocalDateTime
+        -eventType: String
+        +Event()
+        +Event(int id, String eventType)
+        +getId() int
+        +getCreatedAt() LocalDateTime
+        +getEventType() String
+        +setEventType(String eventType)
+    }
+
+    class User {
+        -id: String
+        -email: String
+        -password: String
+        -isAdmin: boolean
+        -registeredEvent: List<Event>
+        -notifications: Map<String, Boolean>
+        -preferences: List<IPreference>
+        +User()
+        +User(String email, String password, boolean isAdmin)
+        +addEvent(Event event) boolean
+        +addNotification(String msg, boolean isMuted)
+        +getNotifications()
+        +addPreference(IPreference preference)
+    }
+
+    %% Model Layer Internal Relationships
+    User --> Event : contains list of
+```
+
+### Service Layer
+```mermaid
+classDiagram
+    class NotificationManager {
+        -executorService: ExecutorService
+        +notify(Event event, List<User> subscribers)
+    }
+
+    class IPreference {
+        <<interface>>
+        +filter() Predicate<User>
+    }
+
+    class SpecificTime {
+        -startWorkHour: int
+        -endWorkHour: int
+        +SpecificTime(int startWorkHour, int endWorkHour)
+        +getEndWorkHour() int
+        +getStartWorkHour() int
+        +filter() Predicate<User>
+    }
+
+    %% Service Layer Internal Relationships
+    SpecificTime ..|> IPreference : implements
+```
+
+### Data Layer
+```mermaid
+classDiagram
+    class Data {
+        +users: List<User>
+        +events: List<Event>
+        +subscribers: Map<String, List<User>>
+    }
+
+    %% Note: Data is a static storage class
+    %% No internal relationships - it's a simple data container
+```
+
+### Layer-to-Layer Connections
+```mermaid
+graph TB
+    subgraph "View Layer"
+        MC[MainController]
+        UV[UserView]
+        AV[AdminView]
+        AU[AuthenticationView]
+    end
+    
+    subgraph "Controller Layer"
+        EB[EventBus]
+        PUB[Publisher]
+        SCH[Schedule]
+    end
+    
+    subgraph "Service Layer"
+        NM[NotificationManager]
+        IP[IPreference]
+        ST[SpecificTime]
+    end
+    
+    subgraph "Model Layer"
+        U[User]
+        E[Event]
+    end
+    
+    subgraph "Data Layer"
+        D[Data]
+    end
+
+    %% View to Controller
+    MC --> EB
+    MC --> PUB
+    UV --> EB
+    AV --> PUB
+
+    %% Controller to Service
+    EB --> NM
+    
+    %% Controller to Data
+    EB --> D
+    
+    %% View to Data
+    AU --> D
+    
+    %% Model to Service
+    U --> IP
+    
+    %% Service to Model (indirect)
+    NM --> U
+    NM --> E
 ```mermaid
 classDiagram
     class Main {
