@@ -6,6 +6,7 @@ A Java-based event notification system implementing the Observer pattern with as
 
 ### Complete System Overview
 ### View Layer
+```mermaid
 
 classDiagram
     class MainController {
