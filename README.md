@@ -131,7 +131,58 @@ classDiagram
         -scanner: Scanner
         +getIntegerInput() int
         +getStringInput() String
-        +
+        +getIntegerInput(String prompt) int
+        +getStringInput(String prompt) String
+        +validateRange(int value, int min, int max) boolean
+        +clearBuffer()
+    }
+
+    class ConsoleUI {
+        +RESET: String
+        +RED: String
+        +GREEN: String
+        +YELLOW: String
+        +BLUE: String
+        +PURPLE: String
+        +CYAN: String
+        +BOLD: String
+        +printWelcomeBanner()
+        +printMainMenu()
+        +printSuccessMessage(String message)
+        +printErrorMessage(String message)
+        +printInfoMessage(String message)
+    }
+
+    %% Relationships
+    Main --> MainController : creates
+    
+    Publisher --> EventBus : uses
+    Schedule --> EventBus : uses
+    
+    EventBus --> Data : accesses
+    EventBus --> NotificationManager : calls
+    
+    User --> Event : subscribes to
+    User --> IPreference : has
+    SpecificTime ..|> IPreference : implements
+    
+    MainController --> EventBus : creates
+    MainController --> Publisher : creates
+    MainController --> AuthenticationView : uses
+    MainController --> UserView : uses
+    MainController --> AdminView : uses
+    
+    UserView --> EventBus : uses
+    UserView --> EventDisplayView : uses
+    AdminView --> Publisher : uses
+    AdminView --> EventDisplayView : uses
+    
+    AuthenticationView --> Data : accesses
+    EventDisplayView --> Data : accesses
+    
+    Data --> User : stores
+    Data --> Event : stores
+```
 
 ## Features
 
