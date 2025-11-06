@@ -2,106 +2,295 @@
 
 A Java-based event notification system implementing the Observer pattern with asynchronous processing.
 
-## UML Class Diagram
+## Architecture Layer Diagrams
+
+### Complete System Overview
 
 ```mermaid
 classDiagram
+    class Main {
+        +main(args)
+    }
+
     class EventBus {
-        -observers: List<IObserver>
-        -eventQueue: Queue<Event>
-        +subscribe(observer)
-        +unsubscribe(observer)
-        +publishEvent(event)
-        +notifyObservers(event)
-    }
-
-    class IObserver {
-        <<interface>>
-        +update(event)
-    }
-
-    class User {
-        -email: String
-        -password: String
-        -role: UserRole
-        -preferences: IPreference
-        -subscribedEventTypes: List<String>
-        +subscribe(eventType)
-        +unsubscribe(eventType)
-        +update(event)
-    }
-
-    class Event {
-        -id: String
-        -type: String
-        -title: String
-        -description: String
-        -timestamp: LocalDateTime
-        -priority: Priority
+        +subscribe(user, event)
+        +publish(event)
     }
 
     class Publisher {
         -eventBus: EventBus
-        +publishEvent(event)
+        +publish(event)
     }
 
-    class Schedule {
-        -scheduledEvents: Map
-        -eventBus: EventBus
-        +scheduleEvent(event, time)
-        +processScheduledEvents()
+    class Event {
+        -id: int
+        -eventType: String
+        +getId()
+        +getEventType()
+    }
+
+    class User {
+        -id: String
+        -email: String
+        -isAdmin: boolean
+        +addEvent(event)
+    }
+
+    class Data {
+        +users: List
+        +events: List
+        +subscribers: Map
     }
 
     class NotificationManager {
-        -instance: NotificationManager
-        -users: List<User>
-        -eventBus: EventBus
-        +getInstance()
-        +sendNotification(user, event)
+        +notify(event, subscribers)
     }
 
     class IPreference {
         <<interface>>
-        +shouldReceiveNotification(event)
-        +getQuietHours()
+        +filter()
     }
 
-    class DefaultPreference {
-        -quietHours: TimeRange
-        -mutedEventTypes: Set<String>
-        +shouldReceiveNotification(event)
+    class SpecificTime {
+        -startWorkHour: int
+        -endWorkHour: int
+        +filter()
     }
 
-    class ConsoleUI {
-        -notificationManager: NotificationManager
+    class MainController {
         -eventBus: EventBus
-        -currentUser: User
-        +start()
-        +showMainMenu()
+        -publisher: Publisher
+        +initialize()
     }
 
-    class DataStore {
-        -users: Map<String, User>
-        -events: List<Event>
-        +saveUser(user)
-        +getUser(email)
+    class UserView {
+        -eventBus: EventBus
+        +displayUserDashboard(user)
+    }
+
+    class AdminView {
+        -publisher: Publisher
+        +displayAdminDashboard()
     }
 
     %% Relationships
-    User ..|> IObserver
-    DefaultPreference ..|> IPreference
-    User --> IPreference
-    User --> UserRole
-    Event --> Priority
+    Main --> MainController
     Publisher --> EventBus
-    Schedule --> EventBus
-    EventBus --> IObserver
-    NotificationManager --> User
-    NotificationManager --> EventBus
-    ConsoleUI --> NotificationManager
-    ConsoleUI --> EventBus
-    DataStore --> User
-    DataStore --> Event
+    EventBus --> Data
+    User --> Event
+    SpecificTime ..|> IPreference
+    MainController --> UserView
+    MainController --> AdminView
+```
+
+### View Layer
+```mermaid
+classDiagram
+    class MainController {
+        -eventBus: EventBus
+        -publisher: Publisher
+        -authView: AuthenticationView
+        -userView: UserView
+        -adminView: AdminView
+        +initialize()
+        +handleLogin()
+        +handleRegistration()
+    }
+
+    class AuthenticationView {
+        +displayLoginScreen() User
+        +displayRegistrationScreen() User
+        -authenticateUser() User
+    }
+
+    class UserView {
+        -eventBus: EventBus
+        -eventDisplayView: EventDisplayView
+        +displayUserDashboard(User user)
+        -handleEventSubscription(User user)
+        -configureUserPreferences(User user)
+    }
+
+    class AdminView {
+        -publisher: Publisher
+        -eventDisplayView: EventDisplayView
+        +displayAdminDashboard()
+        -handleEventCreation()
+        -handleEventPublication()
+    }
+
+    class EventDisplayView {
+        +displayAllEvents()
+        +getEventById(int id) Event
+    }
+
+    class InputHandler {
+        -scanner: Scanner
+        +getIntegerInput() int
+        +getStringInput() String
+        +validateRange() boolean
+    }
+
+    class ConsoleUI {
+        +printWelcomeBanner()
+        +printMainMenu()
+        +printSuccessMessage()
+        +printErrorMessage()
+    }
+
+    %% View Layer Internal Relationships
+    MainController --> AuthenticationView : uses
+    MainController --> UserView : uses
+    MainController --> AdminView : uses
+    UserView --> EventDisplayView : uses
+    AdminView --> EventDisplayView : uses
+    UserView --> InputHandler : uses
+    AdminView --> InputHandler : uses
+    AuthenticationView --> InputHandler : uses
+    UserView --> ConsoleUI : uses
+    AdminView --> ConsoleUI : uses
+    AuthenticationView --> ConsoleUI : uses
+```
+
+### Controller Layer
+```mermaid
+classDiagram
+    class EventBus {
+        +subscribe(User user, Event event)
+        +publish(Event event) boolean
+    }
+
+    class Publisher {
+        -eventBus: EventBus
+        +Publisher()
+        +Publisher(EventBus eventBus)
+        +publish(Event event)
+    }
+
+    class Schedule {
+        -eventBus: EventBus
+        -scheduledExecutorService: ScheduledExecutorService
+        +Schedule(EventBus eventBus)
+        +start(Event event, long time)
+        +stop()
+    }
+
+    %% Controller Layer Internal Relationships
+    Publisher --> EventBus : uses
+    Schedule --> EventBus : uses
+```
+
+### Service Layer
+```mermaid
+classDiagram
+    class NotificationManager {
+        -executorService: ExecutorService
+        +notify(Event event, List<User> subscribers)
+    }
+
+    class IPreference {
+        <<interface>>
+        +filter() Predicate<User>
+    }
+
+    class SpecificTime {
+        -startWorkHour: int
+        -endWorkHour: int
+        +SpecificTime(int startWorkHour, int endWorkHour)
+        +getEndWorkHour() int
+        +getStartWorkHour() int
+        +filter() Predicate<User>
+    }
+
+    %% Service Layer Internal Relationships
+    SpecificTime ..|> IPreference : implements
+```
+
+### Model Layer
+```mermaid
+classDiagram
+    class Event {
+        -id: int
+        -createdAt: LocalDateTime
+        -eventType: String
+        +Event()
+        +Event(int id, String eventType)
+        +getId() int
+        +getCreatedAt() LocalDateTime
+        +getEventType() String
+        +setEventType(String eventType)
+    }
+
+    class User {
+        -id: String
+        -email: String
+        -password: String
+        -isAdmin: boolean
+        -registeredEvent: List<Event>
+        -notifications: Map<String, Boolean>
+        -preferences: List<IPreference>
+        +User()
+        +User(String email, String password, boolean isAdmin)
+        +addEvent(Event event) boolean
+        +addNotification(String msg, boolean isMuted)
+        +getNotifications()
+        +addPreference(IPreference preference)
+    }
+
+    %% Model Layer Internal Relationships
+    User --> Event : contains list of
+```
+
+### Data Layer
+```mermaid
+classDiagram
+    class Data {
+        +users: List<User>
+        +events: List<Event>
+        +subscribers: Map<String, List<User>>
+    }
+```
+
+### Cross-Layer Communication
+```mermaid
+graph TB
+    subgraph "📱 View Layer"
+        MC[MainController]
+        UV[UserView]
+        AV[AdminView]
+        AU[AuthenticationView]
+    end
+    
+    subgraph "🎮 Controller Layer"
+        EB[EventBus]
+        PUB[Publisher]
+        SCH[Schedule]
+    end
+    
+    subgraph "⚙️ Service Layer"
+        NM[NotificationManager]
+        ST[SpecificTime]
+    end
+    
+    subgraph "📊 Model Layer"
+        U[User]
+        E[Event]
+    end
+    
+    subgraph "💾 Data Layer"
+        D[Data]
+    end
+
+    MC --> EB
+    MC --> PUB
+    UV --> EB
+    AV --> PUB
+    EB --> NM
+    EB --> D
+    AU --> D
+    U --> ST
+    NM --> U
+    NM --> E
 ```
 
 ## Features
@@ -152,27 +341,6 @@ org.example/
 ├── View/          # UI components and controllers
 └── Data/          # In-memory storage
 ```
-
-## Key Component Interactions
-
-### Observer Pattern Flow
-1. **EventBus** acts as the central hub managing all observers (Users)
-2. **Publisher** creates events and sends them to EventBus
-3. **EventBus** notifies all subscribed Users about relevant events
-4. **NotificationManager** processes notifications based on user preferences
-
-### User Preference System
-- **IPreference** interface allows different notification strategies
-- **DefaultPreference** for regular users with muting and quiet hours
-- **AdminPreference** for administrators with priority notifications
-- **TimeRange** utility for quiet hours functionality
-
-### Data Flow
-1. Admin creates event via **ConsoleUI**
-2. **Publisher** publishes event to **EventBus**
-3. **EventBus** notifies subscribed **Users**
-4. **NotificationManager** applies user **Preferences**
-5. Notifications delivered based on user settings
 
 ## Testing
 
